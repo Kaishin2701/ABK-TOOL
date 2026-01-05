@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ABK App V3</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo-area">
+            <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'">
+            <h2>ABK TOOL</h2>
+        </div>
+        <nav>
+            <button class="tab-btn active" onclick="switchTab('tab-watermark')">💧 Auto Watermark</button>
+            <button class="tab-btn" onclick="switchTab('tab-linkcheck')">🔗 Link Checker</button>
+            <button class="tab-btn" onclick="switchTab('tab-cleaner')">🧹 HTML Cleaner</button>
+        </nav>
+        <div class="footer-info">Ver 2.0 Web</div>
+    </aside>
+
+    <main>
+        <div id="tab-watermark" class="tab-content active">
+            <div class="header-title">ABK IMAGE PROCESSOR</div>
+            
+            <div class="group-box">
+                <div id="gallery-area" class="gallery-scroll">
+                    <p id="gallery-placeholder">Kéo thả hoặc bấm nút Select Images...</p>
+                </div>
+                <div class="btn-row">
+                    <button class="btn-secondary" onclick="document.getElementById('inp-files').click()">Select Images</button>
+                    <button class="btn-secondary" onclick="clearGallery()">Clear Gallery</button>
+                    <input type="file" id="inp-files" multiple accept="image/*" hidden>
+                </div>
+            </div>
+
+            <div class="group-box">
+                <div class="lbl-title">WATERMARK SETTINGS</div>
+                <div class="input-row">
+                    <input type="text" id="wm-path-display" placeholder="Chưa chọn logo..." readonly>
+                    <button class="btn-accent" onclick="document.getElementById('inp-wm').click()">Library</button>
+                    <input type="file" id="inp-wm" accept="image/*" hidden>
+                </div>
+                
+                <div class="input-row">
+                    <label>Mode:</label>
+                    <select id="sel-mode">
+                        <option value="Fullscreen">Fullscreen</option>
+                        <option value="Bottom-right">Bottom-right</option>
+                        <option value="Diagonal repeat">Diagonal repeat</option>
+                    </select>
+                    <label>Rename:</label>
+                    <input type="text" id="inp-rename" value="{default name}">
+                </div>
+
+                <div class="sliders-row">
+                    <div class="slider-group">
+                        <label id="lbl-quality">Quality: 85</label>
+                        <input type="range" id="rng-quality" min="10" max="100" value="85">
+                    </div>
+                    <div class="slider-group">
+                        <label id="lbl-opacity">Opacity: 100%</label>
+                        <input type="range" id="rng-opacity" min="0" max="100" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="log-container">
+                <textarea id="log-box" readonly></textarea>
+            </div>
+            
+            <div class="progress-bar"><div id="p-bar-fill"></div></div>
+            <p id="status-lbl">Ready.</p>
+            <button id="btn-start-wm" class="btn-big-green">START PROCESSING</button>
+            <div id="download-area" style="display:none"></div>
+        </div>
+
+        <div id="tab-linkcheck" class="tab-content">
+            <div class="header-title">🔗 MASS LINK CHECKER</div>
+            <div class="top-stats" id="link-stats">Live: 0 | Dead: 0 | Error: 0</div>
+            
+            <div class="split-layout">
+                <div class="split-left">
+                    <label style="color:#00ff88; font-weight:bold">Input URLs:</label>
+                    <textarea id="inp-urls" placeholder="Paste links here..."></textarea>
+                </div>
+                <div class="split-right">
+                    <div class="filter-row">
+                        <label>Filter:</label>
+                        <select id="sel-filter">
+                            <option>Show All</option>
+                            <option>Live (200)</option>
+                            <option>Dead (404)</option>
+                        </select>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="tbl-links">
+                            <thead>
+                                <tr>
+                                    <th width="60">Code</th>
+                                    <th>URL</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-row" style="margin-top:10px">
+                <button id="btn-check-link" class="btn-green">START CHECKING</button>
+                <button id="btn-stop-link" class="btn-red" disabled>STOP</button>
+            </div>
+            <div class="progress-bar"><div id="link-p-bar"></div></div>
+            <p id="link-status">Ready.</p>
+        </div>
+
+        <div id="tab-cleaner" class="tab-content">
+            <div class="header-title">🧹 HTML CLEANER</div>
+            <div class="split-layout" style="height: 60vh;">
+                <div class="split-col">
+                    <label>1. Input Code:</label>
+                    <textarea id="html-in" placeholder="Paste HTML code here..."></textarea>
+                </div>
+                <div class="split-center">
+                    <button id="btn-clean" class="btn-green">⬇ CLEAN CODE NOW</button>
+                    <button id="btn-copy-html" class="btn-blue">📋 Copy Result</button>
+                </div>
+                <div class="split-col">
+                    <label>2. Output Code:</label>
+                    <textarea id="html-out" readonly style="color:#00ff88"></textarea>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="modules/watermark.js"></script>
+    <script src="modules/linkCheck.js"></script>
+    <script src="modules/htmlClean.js"></script>
+</body>
+</html>
