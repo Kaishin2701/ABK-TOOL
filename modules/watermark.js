@@ -60,7 +60,6 @@ function clearGallery() {
 
 async function startProcess() {
     if(!inputFiles.length) return alert("Chưa chọn ảnh!");
-    if(!wmImg) return alert("Chưa chọn Logo!");
 
     const btn = document.getElementById('btn-start-wm');
     btn.disabled = true; btn.innerText = "ĐANG XỬ LÝ...";
@@ -74,6 +73,9 @@ async function startProcess() {
     downloadArea.innerHTML = ''; // Reset link tải
 
     log(`🚀 Bắt đầu xử lý ${inputFiles.length} ảnh...`);
+    if(!wmImg) log("⚠️ Không có watermark, chỉ xử lý hình ảnh gốc.");
+
+    const processedFiles = []; // Array of {blob, name}
 
     for(let i=0; i<inputFiles.length; i++) {
         try {
@@ -85,12 +87,7 @@ async function startProcess() {
             let newName = renameTpl.replace('{default name}', baseName);
             newName = newName.replace(/[<>:"/\\|?*]/g, '_') + ".webp"; // Sanitize
 
-            // Auto Download (Trên iOS sẽ hiện popup hỏi)
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = newName;
-            downloadArea.appendChild(a);
-            a.click(); // Trigger tải về
+            processedFiles.push({blob, name: newName});
 
             log(`✅ OK: ${file.name} -> ${newName}`);
             document.getElementById('p-bar-fill').style.width = Math.round(((i+1)/inputFiles.length)*100) + "%";
@@ -101,9 +98,34 @@ async function startProcess() {
         await new Promise(r => setTimeout(r, 100)); // Delay để UI mượt
     }
 
+    // Download logic
+    if(processedFiles.length === 1) {
+        // Download single file
+        const {blob, name} = processedFiles[0];
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = name;
+        downloadArea.appendChild(a);
+        a.click();
+    } else if(processedFiles.length > 1) {
+        // Create ZIP
+        const zip = new JSZip();
+        processedFiles.forEach(({blob, name}) => {
+            zip.file(name, blob);
+        });
+        const zipBlob = await zip.generateAsync({type: 'blob'});
+        const zipUrl = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = zipUrl; a.download = 'processed_images.zip';
+        downloadArea.appendChild(a);
+        a.click();
+        log(`📦 Đã tạo ZIP với ${processedFiles.length} ảnh.`);
+    }
+
     log("🎉 Hoàn tất!");
     btn.disabled = false; btn.innerText = "START PROCESSING";
-    alert("Xử lý xong! Kiểm tra thư mục Tải về của trình duyệt.");
+    const msg = processedFiles.length > 1 ? "Xử lý xong! Đã tải xuống file ZIP." : "Xử lý xong! Kiểm tra thư mục Tải về của trình duyệt.";
+    alert(msg);
 }
 
 function processImage(file, mode, opacity, quality) {
@@ -119,31 +141,33 @@ function processImage(file, mode, opacity, quality) {
                 // 1. Draw Original
                 ctx.drawImage(img, 0, 0);
 
-                // 2. Draw Watermark
-                ctx.globalAlpha = opacity;
-                const W = canvas.width, H = canvas.height;
-                const wmW = wmImg.width, wmH = wmImg.height;
+                // 2. Draw Watermark (chỉ nếu có)
+                if(wmImg) {
+                    ctx.globalAlpha = opacity;
+                    const W = canvas.width, H = canvas.height;
+                    const wmW = wmImg.width, wmH = wmImg.height;
 
-                if(mode === 'Fullscreen') {
-                    ctx.drawImage(wmImg, 0, 0, W, H);
-                } else if (mode === 'Bottom-right') {
-                    // Python Logic: scale = int(W * 0.2), if scale < 50 scale = 50
-                    let scale = Math.floor(W * 0.2);
-                    if (scale < 50) scale = 50;
-                    const ratio = wmW / wmH;
-                    const newH = Math.floor(scale / ratio);
-                    ctx.drawImage(wmImg, W - scale - 20, H - newH - 20, scale, newH);
-                } else if (mode === 'Diagonal repeat') {
-                    // Python Logic: wm_scale = int(W * 0.25)
-                    let scale = Math.floor(W * 0.25);
-                    const ratio = wmW / wmH;
-                    const newH = Math.floor(scale / ratio);
-                    const stepX = scale + 50;
-                    const stepY = newH + 50;
-                    
-                    for(let x=0; x < W + stepX; x += stepX) {
-                        for(let y=0; y < H + stepY; y += stepY) {
-                            ctx.drawImage(wmImg, x, y, scale, newH);
+                    if(mode === 'Fullscreen') {
+                        ctx.drawImage(wmImg, 0, 0, W, H);
+                    } else if (mode === 'Bottom-right') {
+                        // Python Logic: scale = int(W * 0.2), if scale < 50 scale = 50
+                        let scale = Math.floor(W * 0.2);
+                        if (scale < 50) scale = 50;
+                        const ratio = wmW / wmH;
+                        const newH = Math.floor(scale / ratio);
+                        ctx.drawImage(wmImg, W - scale - 20, H - newH - 20, scale, newH);
+                    } else if (mode === 'Diagonal repeat') {
+                        // Python Logic: wm_scale = int(W * 0.25)
+                        let scale = Math.floor(W * 0.25);
+                        const ratio = wmW / wmH;
+                        const newH = Math.floor(scale / ratio);
+                        const stepX = scale + 50;
+                        const stepY = newH + 50;
+                        
+                        for(let x=0; x < W + stepX; x += stepX) {
+                            for(let y=0; y < H + stepY; y += stepY) {
+                                ctx.drawImage(wmImg, x, y, scale, newH);
+                            }
                         }
                     }
                 }

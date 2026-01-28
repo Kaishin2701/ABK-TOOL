@@ -17,6 +17,7 @@
             <button class="tab-btn active" onclick="switchTab('tab-watermark')">💧 Auto Watermark</button>
             <button class="tab-btn" onclick="switchTab('tab-linkcheck')">🔗 Link Checker</button>
             <button class="tab-btn" onclick="switchTab('tab-cleaner')">🧹 HTML Cleaner</button>
+            <button class="tab-btn" onclick="switchTab('tab-sku')">🏷️ SKU Generator</button>
         </nav>
         <div class="footer-info">Ver 2.0 Web</div>
     </aside>
@@ -135,8 +136,36 @@
                 </div>
             </div>
         </div>
+
+        <div id="tab-sku" class="tab-content">
+            <div class="header-title">🏷️ SKU AUTO GENERATOR</div>
+            
+            <div class="group-box">
+                <div class="lbl-title">BASE PRODUCT CODE</div>
+                <div class="input-row">
+                    <input type="text" id="sku-base-code" placeholder="VD: SHIRT_ADK/KD hoặc HOODIE_KD hoặc PANTS_AD">
+                    <button class="btn-accent" onclick="skuGenerate()">Generate</button>
+                </div>
+                <div id="sku-info" style="color:#999; font-size:12px; margin-top:8px; display:none"></div>
+            </div>
+
+            <div class="group-box">
+                <div class="lbl-title">SKU VARIANTS (Mỗi dòng 1 ô khi paste vào Excel)</div>
+                <textarea id="sku-output" readonly style="background:#0a0a0a; color:#00ff88; font-family:monospace; height:200px; border:1px solid #333; padding:10px; border-radius:6px;">Nhập base code và bấm Generate để xem kết quả</textarea>
+            </div>
+
+            <div class="group-box">
+                <div class="btn-row" style="gap:10px;">
+                    <button class="btn-green" onclick="skuCopyAll()">📋 Copy All</button>
+                    <button class="btn-blue" onclick="skuClearForm()">🔄 Clear Form</button>
+                    <button class="btn-secondary" onclick="skuExportCsv()">📥 Export CSV</button>
+                </div>
+            </div>
+        </div>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="modules/skuAuto.js"></script>
     <script src="script.js"></script>
     <script src="modules/watermark.js"></script>
     <script src="modules/linkCheck.js"></script>
